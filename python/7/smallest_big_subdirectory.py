@@ -1,7 +1,9 @@
 # working under the asumption that we are not going to cd into a not previously listed directory
 
 import sys
-UNDER_THRESHOLD = []
+OVER_THRESHOLD = []
+DEVICE_MEMORY_SIZE = 70000000
+NEEDED_MEMORY_SIZE = 30000000
 
 class Directory():
     def __init__(self, name: str, parent: "Directory") -> None:
@@ -31,11 +33,16 @@ class Directory():
                 self.dir_sizes += content.compute_size(prefix=prefix+'\t')
         self.total_size = self.file_size + self.dir_sizes
         print(f"{prefix} {self.name} : {self.total_size}")
-
-        if self.total_size <= 100000:
-            UNDER_THRESHOLD.append(self.total_size)
         
         return self.total_size
+    
+    def find_over_threshold_dirs(self, threshold: int):
+        for content in self.content.values():
+            if isinstance(content, Directory):
+                content.find_over_threshold_dirs(threshold=threshold)
+
+        if self.total_size >= threshold:
+            OVER_THRESHOLD.append(self.total_size)
 
 root_directory = Directory(name = '/', parent=None)
 current_directory = root_directory
@@ -60,6 +67,7 @@ while (command := sys.stdin.readline().rstrip()):
     else:
         raise Exception(f"Parse Error: {command}")
 
-root_directory.compute_size('')
-print(UNDER_THRESHOLD)
-print(sum(UNDER_THRESHOLD))
+root_size = root_directory.compute_size('')
+root_directory.find_over_threshold_dirs(threshold=NEEDED_MEMORY_SIZE-DEVICE_MEMORY_SIZE+root_size)
+
+print(sorted(OVER_THRESHOLD))
