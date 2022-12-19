@@ -32,4 +32,3 @@ for _ in range(4):
     SCORES = np.rot90(SCORES)
 
 print(treetops, SCORES, SCORES.max(), sep='\n'*3)
-
